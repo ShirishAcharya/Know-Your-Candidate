@@ -8,9 +8,7 @@ class ProvinceSchema(BaseModel):
     area_sq_km: Optional[str] = None
     website: Optional[str] = None
     headquarter: Optional[str] = None
-
-    # 👇 Include related districts here
     districts: Optional[List[DistrictSchema]] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode = True

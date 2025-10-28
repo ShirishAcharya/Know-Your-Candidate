@@ -12,6 +12,8 @@ app = FastAPI(title="Know Your Candidate")
 origins = [
     "http://localhost:3000",  # frontend URL
     "http://127.0.0.1:3000",
+    "http://110.34.25.249", 
+    "http://110.34.25.249:3000",
 ]
 
 app.add_middleware(

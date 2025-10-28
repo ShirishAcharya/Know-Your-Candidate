@@ -6,16 +6,27 @@ class Candidate(Base):
     __tablename__ = "candidate"
 
     id = Column(BigInteger, primary_key=True, index=True)
-    election_type = Column(String(100), nullable=False)
+
+    # Basic candidate info
+    election_id = Column(BigInteger, nullable=False, comment="Reference to election table if needed")
     name = Column(String(255), nullable=False)
     age = Column(Integer, nullable=True)
     gender = Column(String(20), nullable=True)
+    birthplace = Column(String(255), nullable=True)
     nationality = Column(String(100), default="Nepali", nullable=False)
-    party = Column(String(255), nullable=True)
-    constituency = Column(String(255), nullable=True)
-    source_file = Column(String(255), nullable=True)
 
-    # Store MinIO image URL instead of binary data
+    # Election info
+    election_year = Column(Integer, nullable=True)
+    election_type = Column(String(100), nullable=False)
+    election_level = Column(String(100), nullable=True)
+    constituency = Column(String(255), nullable=True)
+    party = Column(String(255), nullable=True)
+    
+    # Source / reference
+    sources = Column(String(500), nullable=True, comment="Sources of candidate data")
+    source_file = Column(String(255), nullable=True)
+    
+    # Image
     image = Column(String(500), nullable=True, comment="Store MinIO image URL")
 
     # --- Foreign Keys ---

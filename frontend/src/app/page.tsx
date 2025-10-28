@@ -4,219 +4,235 @@ import Hero from "../components/Hero";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
+interface NewsArticle {
+  id: string;
+  title: string;
+  excerpt: string;
+  author?: string;
+  date?: string;
+  category: string;
+  image: string;
+  readTime?: string;
+  featured?: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [categories, setCategories] = useState<Category[]>([{ id: "all", name: "All News" }]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsVisible(true);
+
+    const fetchNews = async () => {
+      try {
+        const res = await fetch("/news");
+        if (!res.ok) throw new Error("Failed to fetch news");
+        const data = await res.json();
+        setArticles(data.articles || []);
+        setCategories(data.categories?.length ? data.categories : [{ id: "all", name: "All News" }]);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
   }, []);
+
+  const filteredArticles =
+    selectedCategory === "all"
+      ? articles
+      : articles.filter(a => a.category === selectedCategory);
+
+  const featured = filteredArticles.filter(a => a.featured);
+  const latest = filteredArticles.filter(a => !a.featured);
 
   const features = [
     {
       title: "Candidate Overview",
-      description: "Get detailed profiles including background, policies, achievements, and track records to understand each candidate thoroughly.",
+      description: "Get detailed profiles including background, policies, achievements, and track records.",
       icon: "/icons/overview.svg",
-      gradient: "from-blue-500 to-cyan-500",
-      bgGradient: "from-blue-50 to-cyan-50",
+      gradient: "from-cyan-500 to-blue-500",
+      bgGradient: "from-cyan-500/10 to-blue-500/10",
       stats: "500+ Profiles"
     },
     {
       title: "Policy Comparison",
-      description: "Compare candidates side by side across key issues. Make data-driven decisions with our intelligent comparison tools.",
+      description: "Compare candidates side by side across key issues with intelligent tools.",
       icon: "/icons/policies.svg",
-      gradient: "from-purple-500 to-pink-500",
-      bgGradient: "from-purple-50 to-pink-50",
+      gradient: "from-blue-500 to-indigo-500",
+      bgGradient: "from-blue-500/10 to-indigo-500/10",
       stats: "50+ Categories"
     },
     {
       title: "Community Engagement",
-      description: "See how candidates interact with communities, their responsiveness, and commitment to public service.",
+      description: "Track candidate interactions and commitment to public service.",
       icon: "/icons/engage.svg",
-      gradient: "from-green-500 to-emerald-500",
-      bgGradient: "from-green-50 to-emerald-50",
+      gradient: "from-indigo-500 to-purple-500",
+      bgGradient: "from-indigo-500/10 to-purple-500/10",
       stats: "10K+ Interactions"
     }
   ];
 
   return (
-    <div className="font-sans bg-gradient-to-br from-slate-50 via-white to-indigo-25 min-h-screen">
-
+    <div className="font-sans bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900/50 min-h-screen text-white">
       {/* Hero Section */}
       <Hero />
 
       {/* Features Section */}
-      <section className="relative overflow-hidden py-24 lg:py-32">
-        {/* Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-200/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-green-200/10 rounded-full blur-3xl animate-pulse delay-500"></div>
-        </div>
-
+      <section className="relative py-20 lg:py-32">
         <div className="container mx-auto px-6 relative z-10">
           {/* Section Header */}
           <div className={`text-center max-w-3xl mx-auto mb-20 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg mb-6">
-              <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Why Choose VoteVision
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl mb-6">
+              <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-pulse shadow-lg"></div>
+              <span className="text-sm font-medium bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent tracking-wide">
+                Why Choose Our Platform
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white via-cyan-100 to-blue-100 bg-clip-text text-transparent drop-shadow-2xl">
                 Everything You Need to
               </span>
               <br />
-              <span className="bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent animate-gradient-x drop-shadow-2xl">
                 Vote Confidently
               </span>
             </h2>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              Comprehensive tools and insights to help you make informed voting decisions 
-              with confidence and clarity.
+            <p className="text-xl text-slate-300 leading-relaxed">
+              Comprehensive tools and insights to help you make informed voting decisions with confidence and clarity.
             </p>
           </div>
 
           {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
             {features.map((feature, index) => (
-              <div
-                key={index}
-                className={`group relative transition-all duration-700 delay-${index * 200} ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-              >
-                {/* Main Card */}
-                <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl hover:shadow-2xl border border-white/50 p-8 transform transition-all duration-500 group-hover:-translate-y-4 group-hover:scale-105 h-full flex flex-col">
-                  
-                  {/* Icon Container */}
-                  <div className={`relative mb-6 inline-flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br ${feature.gradient} shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}>
-                    <div className="absolute inset-0 bg-white/20 rounded-2xl"></div>
-                    <Image
-                      src={feature.icon}
-                      alt={feature.title}
-                      width={48}
-                      height={48}
-                      className="relative z-10 filter brightness-0 invert"
-                    />
-                  </div>
-
-                  {/* Content */}
+              <div key={index} className="relative group transition-all duration-500 hover:scale-105">
+                <div className={`p-8 rounded-3xl bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 shadow-2xl flex flex-col h-full relative overflow-hidden`}>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold mb-4 text-gray-900 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-pink-600 group-hover:bg-clip-text transition-all duration-300">
+                    <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 group-hover:bg-clip-text transition-all duration-300">
                       {feature.title}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed mb-6">
-                      {feature.description}
-                    </p>
-                    
-                    {/* Stats Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100/80 text-sm font-medium text-gray-700">
-                      <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${feature.gradient}`}></div>
+                    <p className="text-slate-300 leading-relaxed mb-6">{feature.description}</p>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-700/50 text-sm font-medium text-slate-300 border border-slate-600/50">
+                      <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${feature.gradient} shadow-lg`}></div>
                       {feature.stats}
                     </div>
                   </div>
-
-                  {/* Hover Effect Border */}
-                  <div className={`absolute inset-0 rounded-3xl bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500 -z-10`}></div>
+                  <div className={`absolute inset-0 rounded-3xl bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 -z-10`}></div>
                 </div>
-
-                {/* Background Glow */}
-                <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-20 transition-all duration-500 -z-20 group-hover:scale-110`}></div>
-
-                {/* Floating Elements */}
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-white/50 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 delay-200"></div>
-                <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-white/30 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 delay-300"></div>
               </div>
             ))}
           </div>
-
-          {/* Bottom CTA */}
-          <div className={`text-center mt-16 transition-all duration-700 delay-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-white/50 max-w-2xl mx-auto">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900">
-                Ready to Make an Informed Decision?
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Join thousands of voters who trust VoteVision for transparent, comprehensive election insights.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="group relative bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    Start Exploring
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-                <button className="group relative bg-white/80 text-gray-700 font-semibold px-8 py-4 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    Watch Demo
-                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    </svg>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
+      </section>
+
+      {/* News Section */}
+      <section className="container mx-auto px-6 py-20">
+        <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Latest News</h2>
+
+        {/* Categories */}
+        <div className="flex flex-wrap gap-3 mb-8">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-4 py-2 rounded-2xl text-sm font-medium transition-colors ${
+                selectedCategory === cat.id
+                  ? "bg-cyan-500/20 text-white"
+                  : "bg-slate-800/40 text-slate-300 hover:bg-slate-700/50"
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Loading/Error */}
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-56 rounded-2xl bg-slate-700/50 animate-pulse"></div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-red-400 text-center">{error}</div>
+        ) : filteredArticles.length === 0 ? (
+          <div className="text-center py-16 text-slate-300">No articles found</div>
+        ) : (
+          <>
+            {featured.length > 0 && (
+              <div className="mb-12">
+                <h3 className="text-2xl font-bold mb-6 text-white">Featured</h3>
+                <div className="grid lg:grid-cols-2 gap-8">
+                  {featured.map((article) => (
+                    <div key={article.id} className="relative h-56 rounded-2xl overflow-hidden shadow-xl bg-slate-800/60 backdrop-blur-xl transition-transform hover:scale-105">
+                      <Image src={article.image} alt={article.title} fill className="object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h4 className="text-white font-bold text-lg">{article.title}</h4>
+                        <p className="text-slate-300 text-sm line-clamp-2">{article.excerpt}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {latest.map((article) => (
+                <div key={article.id} className="relative h-56 rounded-2xl overflow-hidden shadow-xl bg-slate-800/60 backdrop-blur-xl transition-transform hover:scale-105">
+                  <Image src={article.image} alt={article.title} fill className="object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h4 className="text-white font-bold text-lg">{article.title}</h4>
+                    <p className="text-slate-300 text-sm line-clamp-2">{article.excerpt}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       {/* Stats Section */}
-      <section className="relative py-16 bg-gradient-to-r from-gray-900 to-gray-800 text-white overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-          <div className="absolute top-0 left-0 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-72 h-72 bg-pink-500/10 rounded-full blur-3xl"></div>
-        </div>
-        
+      <section className="relative py-20 bg-gradient-to-r from-slate-900 to-blue-900/80 text-white overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             {[
-              { number: "50K+", label: "Active Users" },
               { number: "500+", label: "Candidates" },
               { number: "100+", label: "Constituencies" },
-              { number: "95%", label: "User Satisfaction" }
             ].map((stat, index) => (
               <div key={index} className="group">
-                <div className="text-3xl lg:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent group-hover:from-purple-300 group-hover:to-pink-300 transition-all duration-300">
+                <div className="text-3xl lg:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent group-hover:from-cyan-300 group-hover:to-blue-300 transition-all duration-300 group-hover:scale-105">
                   {stat.number}
                 </div>
-                <div className="text-gray-300 group-hover:text-white transition-colors duration-300">
-                  {stat.label}
-                </div>
+                <div className="text-slate-300 group-hover:text-white transition-colors duration-300 font-medium">{stat.label}</div>
+                <div className="w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 mx-auto mt-2 group-hover:w-8 transition-all duration-300"></div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Animations */}
       <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.1); }
-        }
-        .animate-pulse {
-          animation: pulse 4s ease-in-out infinite;
-        }
-        .delay-200 {
-          animation-delay: 200ms;
-        }
-        .delay-400 {
-          animation-delay: 400ms;
-        }
-        .delay-600 {
-          animation-delay: 600ms;
-        }
-        .delay-800 {
-          animation-delay: 800ms;
-        }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.05); } }
+        @keyframes gradient-x { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        .animate-pulse { animation: pulse 4s ease-in-out infinite; }
+        .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 4s ease infinite; }
       `}</style>
     </div>
   );

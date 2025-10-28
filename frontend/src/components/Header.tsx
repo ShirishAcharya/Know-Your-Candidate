@@ -21,7 +21,6 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check token after mount
     const checkLogin = () => setIsLoggedIn(!!localStorage.getItem("access_token"));
     checkLogin();
 
@@ -44,31 +43,32 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-lg transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl transition-all duration-500 ${
         isScrolled
-          ? "bg-white/95 shadow-2xl shadow-purple-500/10 py-3 border-b border-white/20"
-          : "bg-gradient-to-b from-white/100 to-white/80 shadow-sm py-5"
+          ? "bg-slate-900/95 shadow-2xl shadow-cyan-500/10 py-3 border-b border-slate-700/30"
+          : "bg-gradient-to-b from-slate-900/100 to-slate-900/90 shadow-sm py-5"
       }`}
     >
       <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-3 group">
           <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-              <span className="text-white font-bold text-lg">K</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-white-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:shadow-cyan-500/20 transition-all duration-300 group-hover:scale-110">
+              <span className="text-gray  font-bold text-lg">K</span>
             </div>
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl" />
+            <div className="absolute -inset-1 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 rounded-xl blur-sm group-hover:blur-md transition-all duration-300 opacity-0 group-hover:opacity-100" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-xl bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-              Know Your
+            <span className="font-bold text-xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              now Your
             </span>
-            <span className="text-xs text-gray-500 -mt-1">Candidate</span>
+            <span className="text-xs text-slate-400 -mt-1">Candidate</span>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center space-x-4">
+        <nav className="hidden lg:flex items-center space-x-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeItem === item.name;
@@ -82,79 +82,112 @@ export default function Header() {
                 onMouseLeave={() => setActiveItem("")}
               >
                 <div
-                  className={`flex items-center gap-2 font-medium px-4 py-2.5 rounded-2xl transition-all duration-300 ${
+                  className={`flex items-center gap-3 font-medium px-5 py-3 rounded-2xl transition-all duration-300 ${
                     isActive
-                      ? "text-purple-700 bg-white shadow-lg shadow-purple-500/20"
-                      : "text-gray-700 hover:text-purple-600 hover:bg-white/50"
+                      ? "text-white bg-slate-800/80 shadow-2xl shadow-cyan-500/20 border border-slate-700/50"
+                      : "text-slate-300 hover:text-white hover:bg-slate-800/50 backdrop-blur-sm"
                   }`}
                 >
-                  {Icon && <Icon className="w-4 h-4" />}
-                  <span>{item.name}</span>
+                  {Icon && <Icon className={`w-5 h-5 ${isActive ? "text-cyan-400" : "text-slate-400 group-hover:text-cyan-300"}`} />}
+                  <span className="relative">
+                    {item.name}
+                    <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 transition-all duration-300 ${
+                      isActive ? "w-full" : "group-hover:w-full"
+                    }`} />
+                  </span>
                 </div>
+                
+                {/* Hover Glow Effect */}
+                <div className={`absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-2xl blur-md transition-all duration-300 ${
+                  isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                }`} />
               </Link>
             );
           })}
 
-          <div className="ml-4 pl-4 border-l border-gray-200">
-            {isLoggedIn ? (
-              <Button
-                onClick={handleLogout}
-                className="relative overflow-hidden group bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
-              >
-                Logout
-              </Button>
-            ) : (
-              <Link href="/login">
-                <Button className="relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform">
-                  Login
-                </Button>
-              </Link>
-            )}
-          </div>
+          <div className="ml-4 pl-4 border-l border-slate-700/50">
+  {isLoggedIn ? (
+    <Button
+      onClick={handleLogout}
+      className="relative overflow-hidden group bg-white text-slate-900 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl"
+    >
+      <span className="relative z-10">Logout</span>
+      <div className="absolute inset-0 bg-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+    </Button>
+  ) : (
+    <Link href="/login">
+      <Button className="relative overflow-hidden group bg-white text-slate-900 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl">
+        <span className="relative z-10">Login</span>
+        <div className="absolute inset-0 bg-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+      </Button>
+    </Link>
+  )}
+</div>
+
         </nav>
 
         {/* Mobile Hamburger */}
         <div className="lg:hidden flex items-center">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="p-3 rounded-xl bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-300"
             aria-label="Toggle menu"
           >
-            <span className="block w-6 h-0.5 bg-gray-800 mb-1"></span>
-            <span className="block w-6 h-0.5 bg-gray-800 mb-1"></span>
-            <span className="block w-6 h-0.5 bg-gray-800"></span>
+            <div className="space-y-1.5">
+              <span className={`block w-6 h-0.5 bg-slate-300 transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
+              <span className={`block w-6 h-0.5 bg-slate-300 transition-all duration-300 ${menuOpen ? "opacity-0" : "opacity-100"}`}></span>
+              <span className={`block w-6 h-0.5 bg-slate-300 transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
+            </div>
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="lg:hidden mt-2 px-6 pb-4 space-y-2 bg-white shadow-md border-t border-gray-200">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2 rounded-lg hover:bg-purple-100 text-gray-700 font-medium"
-            >
-              {item.name}
-            </Link>
-          ))}
+        <div className="lg:hidden mt-2 px-6 pb-6 space-y-3 bg-slate-800/95 backdrop-blur-xl shadow-2xl border-t border-slate-700/50">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-700/50 text-slate-300 font-medium transition-all duration-300 hover:text-white group border border-transparent hover:border-slate-600/50"
+              >
+                {Icon && <Icon className="w-5 h-5 text-cyan-400 group-hover:text-cyan-300" />}
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+<div className="ml-4 pl-4 border-l border-slate-700/50">
+  {isLoggedIn ? (
+    <Button
+      onClick={handleLogout}
+      className="relative overflow-hidden group bg-white text-slate-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl border border-slate-200"
+      variant="ghost"
+    >
+      <span className="relative z-10">Logout</span>
+      {/* Optional hover highlight */}
+      <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl" />
+    </Button>
+  ) : (
+    <Link href="/login">
+      <Button
+        className="relative overflow-hidden group bg-white text-slate-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl border border-slate-200"
+        variant="ghost"
+      >
+        <span className="relative z-10">Login</span>
+        {/* Optional hover highlight */}
+        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl" />
+      </Button>
+    </Link>
+  )}
+</div>
 
-          {isLoggedIn ? (
-            <Button
-              onClick={handleLogout}
-              className="w-full mt-2 bg-red-500 hover:bg-red-600 text-white"
-            >
-              Logout
-            </Button>
-          ) : (
-            <Link href="/login" onClick={() => setMenuOpen(false)}>
-              <Button className="w-full mt-2 bg-purple-600 hover:bg-purple-700 text-white">
-                Login
-              </Button>
-            </Link>
-          )}
+
+
         </div>
       )}
     </header>

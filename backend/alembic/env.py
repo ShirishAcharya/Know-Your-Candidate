@@ -17,6 +17,8 @@ import app.models.province
 import app.models.district
 import app.models.municipality
 import app.models.ward
+import app.models.user
+import app.models.news
 
 
 

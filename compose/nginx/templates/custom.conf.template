@@ -1,15 +1,23 @@
 server {
-    listen ${NGINX_HTTP_PORT};
+    listen 80;
+    server_name transparencynepal.com www.transparencynepal.com;
 
+    # Frontend (Next.js)
     location / {
-        proxy_pass http://web:${APP_PORT};
+        proxy_pass http://nextjs_frontend:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
+        proxy_cache_bypass $http_upgrade;
     }
 
+    # Backend API
     location /api/ {
-        proxy_pass http://web:${APP_PORT};
+        proxy_pass http://know_your_candidate_web:8000/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
