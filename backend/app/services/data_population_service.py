@@ -7,8 +7,8 @@ from app.models.ward import Ward
 
 from typing import Dict, List, Any
 import logging
+from app.logger import logger
 
-logger = logging.getLogger(__name__)
 
 class DataPopulationService:
     def __init__(self, db: Session):

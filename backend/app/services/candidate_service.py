@@ -5,61 +5,68 @@ from app.database.base import SessionLocal
 from app.models.candidate import Candidate
 from app.models.province import Province
 from app.models.district import District
-import logging
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    filename="candidate_parser.log",
-    filemode="w",
-)
-logger = logging.getLogger(__name__)
-
+from app.logger import logger  # centralized logger
 
 def save_candidates_to_db(candidates: List[Dict]):
-    """Store parsed candidates into the database."""
+    """Store parsed candidates into the database with type-safe handling."""
     session = SessionLocal()
     inserted, skipped = 0, 0
 
     try:
         for data in candidates:
+            # Ensure province and district exist
             province = (
                 session.query(Province)
-                .filter(Province.name.ilike(data["province"]))
+                .filter(Province.name.ilike(str(data.get("province", ""))))
                 .first()
             )
             district = (
                 session.query(District)
-                .filter(District.name.ilike(data["district"]))
+                .filter(District.name.ilike(str(data.get("birthplace", ""))))
                 .first()
             )
 
             if not province and not district:
                 skipped += 1
+                logger.warning(f"Skipping candidate {data.get('name')} due to missing province/district.")
                 continue
 
+            # Convert constituency to string to match DB type
+            constituency_str = str(data.get("constituency", ""))
+
+            # Check for duplicates
             existing = (
                 session.query(Candidate)
                 .filter(
-                    Candidate.name == data["name"],
-                    Candidate.constituency == data["constituency"],
-                    Candidate.election_type == data["election_type"],
+                    Candidate.name == str(data.get("name", "")),
+                    Candidate.constituency == constituency_str,
+                    Candidate.election_type == str(data.get("election_type", "")),
                 )
                 .first()
             )
             if existing:
                 skipped += 1
+                logger.info(f"Skipping duplicate candidate: {data.get('name')}, {constituency_str}")
                 continue
 
+            # Safely cast age to integer
+            age = None
+            try:
+                age_val = data.get("age")
+                if age_val is not None:
+                    age = int(age_val)
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid age for candidate {data.get('name')}: {age_val}")
+
             candidate = Candidate(
-                election_type=data.get("election_type", ""),
-                name=data.get("name", ""),
-                age=int(data["age"]) if str(data["age"]).isdigit() else None,
-                gender=data.get("gender", ""),
-                nationality=data.get("nationality", "Nepali"),
-                party=data.get("party", ""),
-                constituency=data.get("constituency", ""),
-                source_file=data.get("source_file", ""),
+                election_type=str(data.get("election_type", "")),
+                name=str(data.get("name", "")),
+                age=age,
+                gender=str(data.get("gender", "")),
+                nationality=str(data.get("nationality", "Nepali")),
+                party=str(data.get("party", "")),
+                constituency=constituency_str,
+                source_file=str(data.get("source_file", "")),
                 province_id=province.id if province else None,
                 district_id=district.id if district else None,
             )
@@ -68,10 +75,9 @@ def save_candidates_to_db(candidates: List[Dict]):
             inserted += 1
 
         session.commit()
-        logger.info(f"✅ Inserted {inserted} candidates, skipped {skipped} duplicates or unmatched.")
-        print(f"✅ Inserted {inserted} candidates, skipped {skipped}.")
+        logger.info(f"✅ Inserted {inserted} candidates, skipped {skipped}.")
     except Exception as e:
-        logger.error(f"❌ Failed to save candidates: {e}")
+        logger.exception(f"❌ Failed to save candidates: {e}")
         session.rollback()
     finally:
         session.close()

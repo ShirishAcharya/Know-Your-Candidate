@@ -8,7 +8,8 @@ import uuid
 from app.database.session import get_db
 from app.models.candidate import Candidate
 from app.schemas.candidate import CandidateSchema
-from app.core.logger import logger
+import logging
+from app.logger import logger
 from app.core.minio_client import upload_to_minio
 from app.core.config import settings
 
