@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Koshi Province",
+    "name": "Koshi",
     "area_sq_km": "25906",
     "website": "https:\/\/koshi.gov.np\/",
     "headquarter": "Biratnagar",
@@ -1505,7 +1505,7 @@
       {
         "id": 8,
         "province_id": 1,
-        "name": "Pachthar",
+        "name": "Panchthar",
         "area_sq_km": "1241",
         "website": "https:\/\/www.ddcpanchthar.gov.np",
         "headquarter": "Phidim",
@@ -2398,7 +2398,7 @@
       {
         "id": 13,
         "province_id": 1,
-        "name": "Terhathum",
+        "name": "Tehrathum",
         "area_sq_km": "679",
         "website": "https:\/\/www.ddctehrathum.gov.np",
         "headquarter": "Myanglung",
@@ -2677,7 +2677,7 @@
   },
   {
     "id": 2,
-    "name": "Madhesh Province",
+    "name": "Madhesh",
     "area_sq_km": "9661",
     "website": "https:\/\/madhesh.gov.np\/",
     "headquarter": "Janakpur",
@@ -6761,7 +6761,7 @@
       "29": {
         "id": 30,
         "province_id": 3,
-        "name": "Makwanpur",
+        "name": "Makawanpur",
         "area_sq_km": "2426",
         "website": "https:\/\/dccmakwanpur.gov.np\/",
         "headquarter": "Hetauda",
@@ -7191,7 +7191,7 @@
       "31": {
         "id": 32,
         "province_id": 3,
-        "name": "Ramechap",
+        "name": "Ramechhap",
         "area_sq_km": "1546",
         "website": "https:\/\/dccramechhap.gov.np\/",
         "headquarter": "Manthali",
@@ -9019,7 +9019,7 @@
       "43": {
         "id": 44,
         "province_id": 4,
-        "name": "Parwat",
+        "name": "Parbat",
         "area_sq_km": "494",
         "website": "https:\/\/dccparbat.gov.np\/",
         "headquarter": "Kusma",
@@ -11367,7 +11367,7 @@
       "55": {
         "id": 56,
         "province_id": 5,
-        "name": "Eastern Rukum",
+        "name": "Rukum Purva",
         "area_sq_km": "1161.13",
         "website": "https:\/\/dccrukum.gov.np\/",
         "headquarter": "Rukumkot",
@@ -11783,7 +11783,7 @@
       "58": {
         "id": 59,
         "province_id": 6,
-        "name": "Western Rukum",
+        "name": "Rukum Pashchim",
         "area_sq_km": "1213.49",
         "website": "https:\/\/dccrukum.gov.np\/",
         "headquarter": "Musikot",
@@ -13392,7 +13392,7 @@
   },
   {
     "id": 7,
-    "name": "Sudur Paschimanchal",
+    "name": "Sudurpashchim",
     "area_sq_km": "19539",
     "website": "https:\/\/sudurpashchim.gov.np\/",
     "headquarter": "Godawari",
@@ -14313,7 +14313,7 @@
       "73": {
         "id": 74,
         "province_id": 7,
-        "name": "Acham",
+        "name": "Achham",
         "area_sq_km": "1692",
         "website": "https:\/\/dccacham.gov.np\/",
         "headquarter": "Mangalsen",

@@ -38,8 +38,8 @@ export default function CandidateLayout({
               <div className="flex items-center justify-between">
                 <span className="flex items-center text-gray-600 font-medium">
                   <LocationIcon className="w-4 h-4 mr-2" />
-                  {candidate.district?.name || "N/A"},{" "}
-                  {candidate.province?.name || "N/A"}
+                  {candidate.birthplace || "N/A"},{" "}
+                  {candidate.constituency || "N/A"}
                 </span>
                 <Button
                   variant="outline"

@@ -38,13 +38,13 @@ except Exception as e:
     province_map = {}
 
 numbered_provinces = {
-    "१": "Koshi Province",
-    "२": "Madhesh Province",
-    "३": "Bagmati Province",
-    "४": "Gandaki Province",
-    "५": "Lumbini Province",
-    "६": "Karnali Province",
-    "७": "Sudurpashchim Province"
+    "१": "Koshi",
+    "२": "Madhesh",
+    "३": "Bagmati",
+    "४": "Gandaki",
+    "५": "Lumbini",
+    "६": "Karnali",
+    "७": "Sudurpashchim"
 }
 
 def map_province(prov: str) -> str:
@@ -82,20 +82,21 @@ def process_hor_data_with_pandas(file_path_or_buffer) -> List[dict]:
         'election_id': 1,
         'name': row['name'],
         'age': int(row['age']),
+        'gender' : row['gender'],
         'province': row['pradesh'],
         'birthplace': row['jilla'],
         'nationality': 'Nepali',
         'election_year': ELECTION_YEAR,
         'party': row['party'],
-        'constituency': row['constituency_hor'],
-        'election_type': 'HOR',
+        'federal_constituency': row['constituency_hor'],
+        'constituency' : row['constituency_hor'],
+        'election_type': 'House of Representatives',
         'election_level': 'Federal',
         'sources': 'ECN data 2079'
     }, axis=1).tolist()
 
 
     logger.info(f"Processed {len(candidates)} candidates from Excel data. First 10 candidates: {candidates[:10]}")
-
     return candidates
 
 # --- Insert into DB ---
@@ -120,11 +121,14 @@ def insert_candidates(file_path_or_buffer):
                 election_id=cand['election_id'],
                 name=cand['name'],
                 age=cand['age'],
+                gender = cand['gender'],
                 province_id=province_id,
                 district_id=district_id,
+                birthplace = cand['birthplace'],
                 nationality=cand['nationality'],
                 election_year=cand['election_year'],
                 party=cand['party'],
+                federal_constituency=cand['constituency'],
                 constituency=cand['constituency'],
                 election_type=cand['election_type'],
                 election_level=cand['election_level'],
@@ -138,7 +142,7 @@ def insert_candidates(file_path_or_buffer):
 
     db.commit()
     logger.info(f"Inserted {inserted_count} candidates into the database.")
-    print(f"Inserted {inserted_count} candidates into the database.")
+    # print(f"Inserted {inserted_count} candidates into the database.")
 
 # --- Run script ---
 if __name__ == "__main__":

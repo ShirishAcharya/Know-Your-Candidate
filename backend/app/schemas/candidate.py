@@ -13,6 +13,7 @@ class CandidateSchema(BaseModel):
     party: Optional[str] = None
     constituency: Optional[str] = None
     source_file: Optional[str] = None
+    image_url: Optional[str] = None
 
     # Foreign keys
     province_id: Optional[int] = None

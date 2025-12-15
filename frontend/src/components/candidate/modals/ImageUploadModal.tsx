@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import CameraIcon from "@/layout/icons/CameraIcon";
@@ -16,9 +16,33 @@ interface ImageUploadModalProps {
   loading?: boolean;
 }
 
-export default function ImageUploadModal({ isOpen, onClose, onSave, onRemove, currentImage, loading }: ImageUploadModalProps) {
+export default function ImageUploadModal({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  onRemove, 
+  currentImage, 
+  loading 
+}: ImageUploadModalProps) {
   const [previewUrl, setPreviewUrl] = useState<string>(currentImage || "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Reset state when modal opens or currentImage changes
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedFile(null);
+      setPreviewUrl(currentImage || "");
+    }
+  }, [isOpen, currentImage]);
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -35,6 +59,11 @@ export default function ImageUploadModal({ isOpen, onClose, onSave, onRemove, cu
         return;
       }
 
+      // Clean up previous blob URL if it exists
+      if (previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
       setSelectedFile(file);
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
@@ -49,17 +78,23 @@ export default function ImageUploadModal({ isOpen, onClose, onSave, onRemove, cu
     }
   };
 
-  const handleRemoveImage = () => {
-    onRemove();
-    setSelectedFile(null);
-    setPreviewUrl("");
-  };
+  // const handleRemoveImage = () => {
+  //   // Clean up blob URL if it exists
+  //   if (previewUrl.startsWith('blob:')) {
+  //     URL.revokeObjectURL(previewUrl);
+  //   }
+    
+  //   onRemove();
+  //   setSelectedFile(null);
+  //   setPreviewUrl("");
+  // };
 
   const handleClose = () => {
     // Clean up object URL if created
-    if (selectedFile && previewUrl.startsWith('blob:')) {
+    if (previewUrl.startsWith('blob:')) {
       URL.revokeObjectURL(previewUrl);
     }
+    
     setSelectedFile(null);
     setPreviewUrl(currentImage || "");
     onClose();
@@ -110,6 +145,13 @@ export default function ImageUploadModal({ isOpen, onClose, onSave, onRemove, cu
             </p>
           </div>
 
+          {/* Show selected file info */}
+          {selectedFile && (
+            <div className="text-sm text-green-600 bg-green-50 p-2 rounded-lg">
+              ✓ Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex space-x-3 pt-4">
             <Button
@@ -124,7 +166,7 @@ export default function ImageUploadModal({ isOpen, onClose, onSave, onRemove, cu
               )}
               {loading ? 'Uploading...' : 'Save Image'}
             </Button>
-            {currentImage && (
+            {/* {currentImage && (
               <Button
                 type="button"
                 variant="outline"
@@ -135,7 +177,7 @@ export default function ImageUploadModal({ isOpen, onClose, onSave, onRemove, cu
                 <DeleteIcon className="w-4 h-4 mr-2" />
                 Remove
               </Button>
-            )}
+            )} */}
             <Button
               type="button"
               variant="ghost"

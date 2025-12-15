@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware  # <--- import this
 import subprocess
 from app.apis.base import api_router
 from app.middleware.logging_middleware import LoggingMiddleware
-from pathlib import Path
+from app.config import UPLOADS_DIR_STR
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="Know Your Candidate")
 
@@ -30,6 +31,8 @@ app.add_middleware(LoggingMiddleware)
 
 # Routers
 app.include_router(api_router)
+
+app.mount("/candidates/uploads", StaticFiles(directory=str(UPLOADS_DIR_STR)), name="uploads")
 
 @app.get("/")
 async def root():

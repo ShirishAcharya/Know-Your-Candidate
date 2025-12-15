@@ -1,6 +1,7 @@
 import Button from "@/components/ui/Button";
 import UserGroupIcon from "@/layout/icons/UserGroupIcon";
 import ReviewIcon from "@/layout/icons/ReviewIcon";
+import Link from "next/link"
 
 interface CandidateBioProps {
   candidate: any;
@@ -54,12 +55,14 @@ export default function CandidateBio({
             <ReviewIcon className="w-4 h-4 mr-1" />
             Rate Candidate
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-          >
-            Compare with Others
-          </Button>
+          <Link href = "/candidates/compare">
+            <Button
+              variant="primary"
+              size="sm"
+            >
+              Compare with Others
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

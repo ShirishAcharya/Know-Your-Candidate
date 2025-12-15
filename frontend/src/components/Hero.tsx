@@ -3,9 +3,9 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 
 const stats = [
-  { number: "542", label: "Registered Candidates" },
-  { number: "77", label: "Constituencies" },
-  { number: "8.3M", label: "Active Voters" },
+  { number: "3000+", label: "Registered Candidates" },
+  { number: "495", label: "Constituencies" },
+  { number: "18.1M", label: "Voters" },
 ];
 
 const HeroSection: React.FC = () => {
@@ -72,7 +72,7 @@ const HeroSection: React.FC = () => {
             }`}
           >
             <a
-              href="#candidates"
+              href="/candidates"
               className="group relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 hover:scale-105 outline-none"
               aria-label="Explore Candidates"
             >

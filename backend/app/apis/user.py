@@ -1,5 +1,4 @@
 # app/apis/user.py
-import logging
 from datetime import timedelta
 from typing import List, Optional
 
@@ -27,6 +26,7 @@ from app.utils.token_helpers import (
     decode_token,
     logout_all_user_tokens,
 )
+from app.utils.login_user import get_current_user_from_cookie
 
 # JWT / token configuration
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -87,7 +87,7 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/token")
 def login_for_access_token(
-    response: Response,
+    response: Response,   
     db: Session = Depends(get_db),
     redis: Optional[Redis] = Depends(get_redis),
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -166,7 +166,6 @@ def login_for_access_token(
         logger.error(f"Login failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error during login")
 
-
 @router.post("/logout")
 def logout(
     response: Response,
@@ -211,6 +210,14 @@ def get_all_users(db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error fetching users: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error while fetching users")
+    
+@router.get("/me")
+def get_current_user(current_user: User = Depends(get_current_user_from_cookie)):
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email
+    }
 
 
 @router.get("/{id}", response_model=UserOut)

@@ -1,7 +1,15 @@
 "use client";
 import React from "react";
 
-export default function GradientText({ children }: { children: React.ReactNode }) {
+interface GradientTextProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export default function GradientText({ 
+  children, 
+  className = "" 
+}: GradientTextProps) {
   return (
     <span
       className="p-1 font-serif font-bold text-1xl sm:text-3xl tracking-wide

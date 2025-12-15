@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "@/lib/axios-setup";
 import RootLayoutClient from "./RootLayoutClient"; // Client component
 
 export const metadata: Metadata = {

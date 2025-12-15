@@ -42,10 +42,12 @@ export default function ExpandedSections({
       <SocialMedia
         candidate={candidate}
         socialLinks={candidateDetails?.social_links || {}}
+        onAddSocialLinks={() => onOpenAddModal("Social Links")}
       />
 
       <PastElections
         pastElections={candidateDetails?.past_elections || {}}
+        onAddElection={() => onOpenAddModal("Past Elections")}
       />
 
       <Achievements

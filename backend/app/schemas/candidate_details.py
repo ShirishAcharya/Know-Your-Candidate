@@ -51,7 +51,7 @@ class CreateCandidateDetailsSchema(BaseModel):
     achievements: List[AchievementCreate] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------
 # Section: Update Schemas
@@ -75,3 +75,15 @@ class UpdateControversies(BaseModel):
 class UpdateAchievements(BaseModel):
     candidate_id: int
     achievements: List[AchievementCreate]
+
+class UpdateSocialLinks(BaseModel):
+    candidate_id: int
+    social_links: dict
+
+class UpdatePastElections(BaseModel):
+    candidate_id: int
+    past_elections: dict
+
+class RateCandidatePayload(BaseModel):
+    candidate_id: int
+    rating: int

@@ -33,9 +33,9 @@ export default function CampaignFocus({ focuses, onAddFocus }: CampaignFocusProp
                 {focus.description && (
                   <p className="text-gray-600 text-sm mt-1">{focus.description}</p>
                 )}
-                {focus.priority && (
+                {/* {focus.priority && (
                   <p className="text-gray-500 text-xs mt-1">Priority: {focus.priority}</p>
-                )}
+                )} */}
               </div>
             </li>
           ))}

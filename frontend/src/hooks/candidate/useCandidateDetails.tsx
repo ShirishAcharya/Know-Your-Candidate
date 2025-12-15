@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useDispatch} from "react-redux";
 import { Candidate, CandidateDetails } from "@/types/candidate";
+import { updateCandidateImage } from "@/store/candidatesSlice";
 
 export function useCandidateDetails(candidateId: string, candidates: Candidate[]) {
   const [activeCandidate, setActiveCandidate] = useState<Candidate | null>(null);
@@ -12,133 +14,169 @@ export function useCandidateDetails(candidateId: string, candidates: Candidate[]
   const [imageLoading, setImageLoading] = useState(false);
 
   const candidate = candidates.find((c: Candidate) => c.id.toString() === candidateId);
+  const dispatch = useDispatch();
 
-  // Fetch all candidate sections
-useEffect(() => {
-  const fetchCandidateDetails = async () => {
-    if (!candidate) return;
+  let response : Response;
+  
+  useEffect(() => {
+    setLoading(true);
 
-    try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:8000/candidate-details/${candidate.id}`);
-      if (response.ok) {
-        const details = await response.json();
-        setCandidateDetails(details);
-      } else if (response.status === 404) {
-        console.warn("No candidate details found, setting default");
-        setCandidateDetails({
-          candidate_id: candidate.id,
-          overall_rating: 0,
-          total_ratings: 0,
-          past_elections: {},
-          social_links: {},
-          political_experiences: [],
-          campaign_focuses: [],
-          contributions: [],
-          controversies: [],
-          achievements: []
-        });
-      } else {
-        console.error("Failed to fetch candidate details");
-      }
-    } catch (error) {
-      console.error("Error fetching candidate details:", error);
-    } finally {
-      setLoading(false);
+    const id = Number(candidateId);
+
+    const fromRedux = candidates.find(c => c.id === id);
+    if (fromRedux) {
+      setActiveCandidate(fromRedux);
     }
-  };
 
-  if (candidate) {
-    setActiveCandidate(candidate);
-    fetchCandidateDetails();
-  }
-}, [candidate]);
-
-
-  const handleSaveSection = async (section: string, data: any[]) => {
-    if (!activeCandidate) return;
-
-    try {
-      setSaving(true);
-
-      // Determine endpoint and prepare payload
-      let endpoint = "";
-      const payload: CandidateDetails = {
-        candidate_id: activeCandidate.id,
-        political_experiences: candidateDetails?.political_experiences || [],
-        campaign_focuses: candidateDetails?.campaign_focuses || [],
-        contributions: candidateDetails?.contributions || [],
-        controversies: candidateDetails?.controversies || [],
-        achievements: candidateDetails?.achievements || [],
-      };
-
-      switch (section) {
-        case "Political Experience":
-          endpoint = "political-experience";
-          payload.political_experiences = data;
-          break;
-        case "Campaign Focus":
-          endpoint = "campaign-focus";
-          payload.campaign_focuses = data;
-          break;
-        case "Positive Contributions":
-          endpoint = "contributions";
-          payload.contributions = data;
-          break;
-        case "Controversies":
-          endpoint = "controversies";
-          payload.controversies = data;
-          break;
-        case "Achievements":
-          endpoint = "achievements";
-          payload.achievements = data;
-          break;
-        default:
-          throw new Error("Invalid section");
-      }
-
-      // POST to section endpoint
-      const response = await fetch(`http://localhost:8000/candidate-details/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+    fetch(`/api/candidates/${id}/personal`)
+      .then(r => {
+        if (!r.ok) throw new Error("Personal not found");
+        return r.json();
+      })
+      .then(data => {
+        setActiveCandidate(data);
+      })
+      .catch(err => {
+        console.log("Personal fetch failed", err);
       });
 
-      if (response.ok) {
-        const savedDetails = await response.json();
-        setCandidateDetails(savedDetails);
-        setAddModal({ isOpen: false, section: "" });
-        alert(`${section} saved successfully!`);
-      } else if (response.status === 404) {
-        // Create candidate details if not exist
-        const createResponse = await fetch("http://localhost:8000/candidate-details/", {
+    fetch(`/api/candidate-details/${id}`)
+      .then(r => {
+        if (!r.ok) {
+          console.log("No details yet (normal for new candidates)");
+          return null;
+        }
+        return r.json();
+      })
+      .then(data => {
+        if (data) {
+          console.log("Full details loaded:", data);
+          setCandidateDetails(data);
+        }
+      })
+      .catch(err => {
+        console.log("Details fetch error:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+  }, [candidateId, candidates]);
+
+  const handleSaveSection = async (section: string, data: any[] | object) => {
+  if (!activeCandidate) return;
+
+  try {
+    setSaving(true);
+
+    let endpoint = "";
+    const payload: CandidateDetails = {
+      candidate_id: activeCandidate.id,
+      political_experiences: candidateDetails?.political_experiences || [],
+      campaign_focuses: candidateDetails?.campaign_focuses || [],
+      contributions: candidateDetails?.contributions || [],
+      controversies: candidateDetails?.controversies || [],
+      achievements: candidateDetails?.achievements || [],
+      past_elections: candidateDetails?.past_elections || {},
+      social_links: candidateDetails?.social_links || {},
+      overall_rating: candidateDetails?.overall_rating || 0,
+      total_ratings: candidateDetails?.total_ratings || 0, 
+    };
+
+    // Handle different sections
+    switch (section) {
+      case "Political Experience":
+        endpoint = "political-experience";
+        payload.political_experiences = data as any[];
+        break;
+      case "Campaign Focus":
+        endpoint = "campaign-focus";
+        payload.campaign_focuses = data as any[];
+        break;
+      case "Positive Contributions":
+        endpoint = "contributions";
+        payload.contributions = data as any[];
+        break;
+      case "Controversies":
+        endpoint = "controversies";
+        payload.controversies = data as any[];
+        break;
+      case "Achievements":
+        endpoint = "achievements";
+        payload.achievements = data as any[];
+        break;
+      case "Social Links":
+        endpoint = "social-links"; 
+        payload.social_links = data;
+        break;
+      case "Past Elections":
+        endpoint = "past-elections";
+        payload.past_elections = data;
+        break;
+      default:
+        throw new Error("Invalid section");
+    }
+
+    if (section === "Social Links" || section === "Past Elections") {
+      const field = section === "Social Links" ? "social_links" : "past_elections";
+      const endpoint = `/api/candidate-details/${field.toLowerCase().replace('_', '-')}`;
+
+      const minimalPayload = {
+          candidate_id: activeCandidate.id,
+          [field]: data,
+        };
+
+      response = await fetch(endpoint, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(minimalPayload),
+      });
+
+      if (response.status === 404) {
+        response = await fetch("/api/candidate-details/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-
-        if (createResponse.ok) {
-          const createdDetails = await createResponse.json();
-          setCandidateDetails(createdDetails);
-          setAddModal({ isOpen: false, section: "" });
-          alert(`${section} created and saved successfully!`);
-        } else {
-          const err = await createResponse.json();
-          console.error(err);
-          alert("Failed to create candidate details");
-        }
-      } else {
-        const errorData = await response.json();
-        console.error(errorData);
-        alert("Failed to save candidate details");
       }
-    } catch (error) {
-      console.error(error);
-      alert("Error saving candidate details");
-    } finally {
-      setSaving(false);
     }
-  };
+
+    if (response.ok) {
+      const responseText = await response.text();
+      
+      try {
+        const savedDetails = responseText ? JSON.parse(responseText) : null;
+        
+        if (savedDetails) {
+          setCandidateDetails(savedDetails);
+        } else {
+          // If no response body, update state manually
+          setCandidateDetails(payload);
+        }
+        
+        setAddModal({ isOpen: false, section: "" });
+        alert(`${section} saved successfully!`);
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError);
+        console.error("Response text:", responseText);
+        
+        // Update state manually if parsing fails
+        setCandidateDetails(payload);
+        setAddModal({ isOpen: false, section: "" });
+        alert(`${section} saved successfully!`);
+      }
+    } else {
+      const errorText = await response.text();
+      console.error("Save failed:", errorText);
+      alert(`Failed to save ${section}: ${errorText || 'Unknown error'}`);
+    }
+  } catch (error) {
+    console.error("Exception:", error);
+    alert(`Error saving candidate details: ${error}`);
+  } finally {
+    setSaving(false);
+  }
+};
 
   const handleSaveImage = async (imageFile: File) => {
     if (!activeCandidate) return;
@@ -147,18 +185,27 @@ useEffect(() => {
       setImageLoading(true);
 
       const formData = new FormData();
-      formData.append("image", imageFile);
+      formData.append("file", imageFile);
       formData.append("candidate_id", activeCandidate.id.toString());
-      formData.append("bucket_name", "candidate");
 
-      const response = await fetch("http://localhost:8000/upload-candidate-image", {
+      const response = await fetch("/api/candidates/upload-candidate-image", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
 
       if (response.ok) {
         const result = await response.json();
+
+        // THIS LINE UPDATES THE LIST PAGE INSTANTLY
+        dispatch(updateCandidateImage({
+          candidateId: activeCandidate.id,
+          imageUrl: result.image_url
+        }));
+
+        // Update the details page too
         setActiveCandidate({ ...activeCandidate, image: result.image_url });
+
         alert("Image uploaded successfully!");
         setImageModal(false);
       } else {
@@ -174,20 +221,40 @@ useEffect(() => {
     }
   };
 
+
+  const fetchCandidateImage = async (candidate_id: number) => {
+    try {
+      const response = await fetch(`/api/candidates/${candidate_id}/personal`,{
+      // credentials: "include",
+    });
+      
+      if (response.ok) {
+        const candidateData = await response.json();
+        
+        if (candidateData.image) {
+          setActiveCandidate(prev => ({
+            ...prev!,
+            image: candidateData.image
+          }));
+        }
+      }
+    } catch (error) {
+      console.log("No image found or failed to fetch candidate for image");
+    }
+  };
+
   const handleRemoveImage = async () => {
     if (!activeCandidate || !activeCandidate.image) return;
 
     try {
       setImageLoading(true);
 
-      const response = await fetch("http://localhost:8000/remove-candidate-image", {
+      const formData = new FormData();
+      formData.append("candidate_id", activeCandidate.id.toString());
+
+      const response = await fetch("/api/candidates/remove-candidate-image", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidate_id: activeCandidate.id,
-          image_url: activeCandidate.image,
-          bucket_name: "candidate",
-        }),
+        body: formData,
       });
 
       if (response.ok) {
@@ -207,9 +274,41 @@ useEffect(() => {
     }
   };
 
-  const handleAddReview = (review: { rating: number; comment: string }) => {
-    console.log("Adding review:", review);
-    alert("Review submitted! (This should be saved to backend in real app)");
+  const handleAddReview = async (review: { rating: number; comment?: string }) => {
+    if (!activeCandidate) return;
+
+    try {
+      const response = await fetch(`/api/candidate-details/rate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          candidate_id: activeCandidate.id,
+          rating: review.rating,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to submit rating");
+      }
+
+      const updated = await response.json();
+
+      // Update UI instantly
+      setCandidateDetails(prev => prev ? {
+        ...prev,
+        overall_rating: updated.overall_rating,
+        total_ratings: updated.total_ratings,
+      } : prev);
+
+      alert("Thank you! Your rating has been submitted.");
+      setReviewModal(false);
+    } catch (error: any) {
+      console.error(error);
+      alert("Error: " + error.message);
+    }
   };
 
   return {
@@ -226,6 +325,7 @@ useEffect(() => {
     setImageModal,
     handleSaveSection,
     handleSaveImage,
+    fetchCandidateImage,
     handleRemoveImage,
     handleAddReview,
   };

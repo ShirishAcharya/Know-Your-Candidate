@@ -29,11 +29,16 @@ export const candidatesSlice = createSlice({
     selectCandidate: (state, action: PayloadAction<number>) => {
       state.selectedCandidate = state.list.find(c => c.id === action.payload);
     },
+    updateCandidateImage: (state, action: PayloadAction<{ candidateId: number; imageUrl: string }>) => {
+      const candidate = state.list.find((c: Candidate) => c.id === action.payload.candidateId);
+      if (candidate) {
+        candidate.image = action.payload.imageUrl;
+      }
+    },
   },
 });
 
-// Actions
-export const { setCandidates, selectCandidate } = candidatesSlice.actions;
+export const { setCandidates, selectCandidate, updateCandidateImage } = candidatesSlice.actions;
 
 // Selectors
 export const selectCandidates = (state: { candidates: CandidatesState }) => state.candidates.list;

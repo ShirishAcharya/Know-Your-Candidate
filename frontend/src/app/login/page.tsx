@@ -2,12 +2,13 @@
 import AuthForm from "@/components/AuthForm";
 import { useRouter } from "next/navigation";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const handleSubmit = async (formData: { email: string; password: string }) => {
+  const handleSubmit = async (formData: { email: string; password: string }):
+  Promise<boolean> => {
     try {
       const res = await fetch(`${API_BASE_URL}/users/token`, {
         method: "POST",
@@ -35,12 +36,15 @@ export default function LoginPage() {
   window.dispatchEvent(new Event("storage"));
 
   router.push("/"); // redirect
+  return true;
 }else {
         alert(data.detail || "Login failed");
+        return false;
       }
     } catch (err) {
       console.error(err);
       alert("Something went wrong!");
+      return false;
     }
   };
 

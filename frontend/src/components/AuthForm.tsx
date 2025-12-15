@@ -3,6 +3,9 @@
 import { useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import Button from "@/components/ui/Button";
+import { div } from "framer-motion/client";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 interface AuthFormProps {
   mode: "login" | "register";
@@ -143,6 +146,20 @@ export default function AuthForm({ mode, onSubmit }: AuthFormProps) {
                 />
               </div>
             )}
+            
+            {mode == "login" && (
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = `/auth/forgot-password`;
+                  }}
+                  className="text-sm text-rose-600 font-medium hover:text-rose-700 underline underline-offset-4 transition-colors"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
 
             {/* Submit Button */}
             <div className="pt-4">
@@ -174,13 +191,24 @@ export default function AuthForm({ mode, onSubmit }: AuthFormProps) {
               <p className="text-gray-600">
                 {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
                 <a
-                  href="#"
+                  href="/register"
                   className="font-semibold text-rose-500 hover:text-rose-600 transition-colors duration-200 underline-offset-2 hover:underline"
                 >
                   {mode === "login" ? "Sign up" : "Sign in"}
                 </a>
               </p>
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = `${API_BASE_URL}/users/auth/google/login`;
+              }}
+              className="w-full bg-red-500 text-white py-2 rounded-md"
+            >
+              Continue with Google
+            </button>
+
           </form>
 
           {/* Footer */}

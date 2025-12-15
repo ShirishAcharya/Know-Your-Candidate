@@ -1,13 +1,12 @@
-# app/apis/importcandidates.py
 from fastapi import APIRouter, HTTPException
 from app.scripts.importhor2079 import process_hor_data_with_pandas
-from app.services.candidate_service import save_candidates_to_db  # ✅ import the DB function
+from app.services.candidate_service import save_candidates_to_db
 
 router = APIRouter(prefix="/import-candidates", tags=["Candidates"])
 
 HOR_FILE_NAME = "app/data/ALL_CANDIDATE_HOR_2079_06_26_19_00.xlsx"
 
-@router.get("/import-hor2079")
+@router.get("/import-hor-2079")
 async def import_hor_candidates():
     """
     Import HOR candidates from the server-side Excel file and save to DB.

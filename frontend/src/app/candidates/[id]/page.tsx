@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { selectCandidates } from "@/store/candidatesSlice";
-import { Candidate } from "@/types/candidate";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ReviewModal from "@/components/candidate/modals/ReviewModal";
 import AddSectionModal from "@/components/candidate/modals/AddSectionModal";
@@ -13,6 +12,8 @@ import CandidateHeader from "@/components/candidate/CandidateHeader";
 import CandidateLayout from "@/components/candidate/CandidateLayout";
 import ExpandedSections from "@/components/candidate/ExpandedSections";
 import { useCandidateDetails } from "@/hooks/candidate/useCandidateDetails";
+import SocialLinksModal from "@/components/candidate/modals/SocialLinksModal";
+import PastElectionsModal from "@/components/candidate/modals/PastElectionsModal";
 
 export default function CandidateDetailsPage() {
   const router = useRouter();
@@ -36,19 +37,18 @@ export default function CandidateDetailsPage() {
     handleAddReview
   } = useCandidateDetails(candidateId, candidates);
 
-  const candidate = useMemo(
-    () => candidates.find((c: Candidate) => c.id.toString() === candidateId),
-    [candidates, candidateId]
-  );
-
   useEffect(() => {
-    if (!candidate && candidates.length > 0) {
+    if (!loading && !activeCandidate) {
       router.push("/candidates");
     }
-  }, [candidate, candidates, router]);
+  }, [loading, activeCandidate, router]);
 
-  if (!activeCandidate || loading) {
+  if (loading) {
     return <LoadingState />;
+  }
+
+  if (!activeCandidate) {
+    return null;
   }
 
   return (
@@ -58,6 +58,7 @@ export default function CandidateDetailsPage() {
         addModal={addModal}
         imageModal={imageModal}
         activeCandidate={activeCandidate}
+        candidateDetails={candidateDetails}
         onCloseReview={() => setReviewModal(false)}
         onCloseAdd={() => setAddModal({ isOpen: false, section: "" })}
         onCloseImage={() => setImageModal(false)}
@@ -97,8 +98,8 @@ export default function CandidateDetailsPage() {
 
 const LoadingState = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e0eafc] via-[#cfdef3] to-[#f9e4f7] animate-backgroundFade">
-    <div className="text-center">
-      <LoadingSpinner size="lg" />
+    <div className="text-center w-16 h-16">
+      <LoadingSpinner/>
       <p className="mt-4 text-gray-600">Loading candidate details...</p>
     </div>
   </div>
@@ -108,7 +109,8 @@ const Modals = ({
   reviewModal, 
   addModal, 
   imageModal, 
-  activeCandidate, 
+  activeCandidate,
+  candidateDetails, 
   onCloseReview, 
   onCloseAdd, 
   onCloseImage, 
@@ -124,12 +126,32 @@ const Modals = ({
       onReview={onAddReview}
     />
     
-    <AddSectionModal
-      isOpen={addModal.isOpen}
-      onClose={onCloseAdd}
-      onSave={(data) => onSaveSection(addModal.section, data)}
-      section={addModal.section}
-    />
+     {addModal.section !== "Social Links" && addModal.section !== "Past Elections" && (
+      <AddSectionModal
+        isOpen={addModal.isOpen}
+        onClose={onCloseAdd}
+        onSave={(data) => onSaveSection(addModal.section, data)}
+        section={addModal.section}
+      />
+    )}
+
+    {addModal.section === "Social Links" && (
+      <SocialLinksModal
+        isOpen={addModal.isOpen}
+        onClose={onCloseAdd}
+        onSave={(data) => onSaveSection("Social Links", data)}
+        currentLinks={candidateDetails?.social_links || {}}
+      />
+    )}
+
+    {addModal.section === "Past Elections" && (
+      <PastElectionsModal
+        isOpen={addModal.isOpen}
+        onClose={onCloseAdd}
+        onSave={(data) => onSaveSection("Past Elections", data)}
+        currentElections={candidateDetails?.past_elections || {}}
+      />
+    )}
 
     <ImageUploadModal
       isOpen={imageModal}

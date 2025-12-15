@@ -22,7 +22,8 @@ logger = logging.getLogger("database")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "know_your_candidate_user")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "know_your_candidate_pass")
 POSTGRES_DB = os.getenv("POSTGRES_DB", "know_your_candidate_db")
-DB_HOST = os.getenv("DB_HOST", "know_your_candidate_postgres")
+# DB_HOST = os.getenv("DB_HOST", "know_your_candidate_postgres")
+DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = int(os.getenv("DB_PORT", 5432))
 
 SQLALCHEMY_DATABASE_URL = (
@@ -43,7 +44,7 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_DB = int(os.getenv("REDIS_DB", 0))
 
 redis_client = None
-MAX_RETRIES = 10
+MAX_RETRIES = 1
 RETRY_DELAY = 2  # seconds
 
 for attempt in range(1, MAX_RETRIES + 1):

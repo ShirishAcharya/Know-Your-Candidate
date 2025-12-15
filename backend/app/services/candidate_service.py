@@ -32,7 +32,7 @@ def save_candidates_to_db(candidates: List[Dict]):
                 continue
 
             # Convert constituency to string to match DB type
-            constituency_str = str(data.get("constituency", ""))
+            constituency_str = str(data.get("federal_constituency", ""))
 
             # Check for duplicates
             existing = (
@@ -59,16 +59,23 @@ def save_candidates_to_db(candidates: List[Dict]):
                 logger.warning(f"Invalid age for candidate {data.get('name')}: {age_val}")
 
             candidate = Candidate(
-                election_type=str(data.get("election_type", "")),
+                election_id = data.get("election_id" , ""),
                 name=str(data.get("name", "")),
                 age=age,
                 gender=str(data.get("gender", "")),
+                birthplace = str(data.get("birthplace", "")),
                 nationality=str(data.get("nationality", "Nepali")),
                 party=str(data.get("party", "")),
-                constituency=constituency_str,
+                federal_constituency=constituency_str,
+                provincial_constituency = data.get("provincial_constituency"),
+                constituency = data.get("constituency"),
                 source_file=str(data.get("source_file", "")),
                 province_id=province.id if province else None,
                 district_id=district.id if district else None,
+                election_type=str(data.get("election_type", "")),
+                election_year = data.get("election_year" , ""),
+                election_level = str(data.get("election_level" , "")),
+                sources = str(data.get("sources" , ""))
             )
 
             session.add(candidate)

@@ -16,11 +16,11 @@
     "english": "Jhapa"
   },
   {
-    "nepali": "खोटाँग",
+    "nepali": "खोटाङ्ग",
     "english": "Khotang"
   },
   {
-    "nepali": "मोरंग",
+    "nepali": "मोरङ्ग",
     "english": "Morang"
   },
   {
@@ -28,7 +28,7 @@
     "english": "Okhaldhunga"
   },
   {
-    "nepali": "पांचथर",
+    "nepali": "पाँचथर",
     "english": "Panchthar"
   },
   {
@@ -36,7 +36,7 @@
     "english": "Sankhuwasabha"
   },
   {
-    "nepali": "सोलुखुम्बू",
+    "nepali": "सोलुखुम्बु",
     "english": "Solukhumbu"
   },
   {
@@ -48,7 +48,7 @@
     "english": "Taplejung"
   },
   {
-    "nepali": "तेह्रथुम",
+    "nepali": "तेर्हथुम",
     "english": "Tehrathum"
   },
   {
@@ -96,7 +96,7 @@
     "english": "Chitwan"
   },
   {
-    "nepali": "धादिंङ्ग",
+    "nepali": "धादिङ्ग",
     "english": "Dhading"
   },
   {
@@ -104,11 +104,11 @@
     "english": "Dolakha"
   },
   {
-    "nepali": "काठमाडौँ",
+    "nepali": "काठमाडौं",
     "english": "Kathmandu"
   },
   {
-    "nepali": "काभ्रेपलान्चोक",
+    "nepali": "काभ्रेपलाञ्चोक",
     "english": "Kavrepalanchok"
   },
   {
@@ -117,7 +117,7 @@
   },
   {
     "nepali": "मकवानपुर",
-    "english": "Makwanpur"
+    "english": "Makawanpur"
   },
   {
     "nepali": "नुवाकोट",
@@ -152,15 +152,15 @@
     "english": "Kaski"
   },
   {
-    "nepali": "लमजुङ",
+    "nepali": "लमजुंग",
     "english": "Lamjung"
   },
   {
-    "nepali": "मनाङ",
+    "nepali": "मनाङ्ग",
     "english": "Manang"
   },
   {
-    "nepali": "मुस्ताङ",
+    "nepali": "मुस्ताङ", 
     "english": "Mustang"
   },
   {
@@ -168,7 +168,7 @@
     "english": "Myagdi"
   },
   {
-    "nepali": "नवलपुर",
+    "nepali": "नवलपरासी (बर्दघाट सुस्ता पूर्व)",
     "english": "Nawalpur"
   },
   {
@@ -176,7 +176,7 @@
     "english": "Parbat"
   },
   {
-    "nepali": "स्याङग्जा",
+    "nepali": "स्याङ्जा",
     "english": "Syangja"
   },
   {
@@ -188,7 +188,7 @@
     "english": "Kapilvastu"
   },
   {
-    "nepali": "परासी",
+    "nepali": "नवलपरासी (बर्दघाट सुस्ता पश्चिम)",
     "english": "Parasi"
   },
   {
@@ -196,7 +196,7 @@
     "english": "Rupandehi"
   },
   {
-    "nepali": "अर्घाखाँची",
+    "nepali": "अर्घाखांची",
     "english": "Arghakhanchi"
   },
   {
@@ -212,7 +212,7 @@
     "english": "Dang"
   },
   {
-    "nepali": "प्युठान",
+    "nepali": "प्यूठान",
     "english": "Pyuthan"
   },
   {
@@ -220,8 +220,8 @@
     "english": "Rolpa"
   },
   {
-    "nepali": "पूर्वी रूकुम",
-    "english": "Eastern Rukum"
+    "nepali": "रुकुम पूर्व",
+    "english": "Rukum Purva"
   },
   {
     "nepali": "बाँके",
@@ -233,7 +233,7 @@
   },
   {
     "nepali": "रुकुम पश्चिम",
-    "english": "Western Rukum"
+    "english": "Rukum Pashchim"
   },
   {
     "nepali": "सल्यान",
@@ -276,7 +276,7 @@
     "english": "Darchula"
   },
   {
-    "nepali": "बझाङ",
+    "nepali": "बझाङ्ग",
     "english": "Bajhang"
   },
   {
@@ -300,7 +300,7 @@
     "english": "Dadeldhura"
   },
   {
-    "nepali": "कञ्चनपुर",
+    "nepali": "कन्चनपुर",
     "english": "Kanchanpur"
   },
   {

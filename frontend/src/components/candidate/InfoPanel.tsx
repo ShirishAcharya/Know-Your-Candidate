@@ -29,7 +29,9 @@ export default function InfoPanel({ candidate, candidateDetails, onOpenReviewMod
           <InfoItem
             icon={LocationIcon}
             label="Location"
-            value={`${candidate.district?.name || "N/A"}, ${candidate.province?.name || "N/A"}`}
+            value={[candidate.birthplace, candidate.constituency]
+                    .filter(Boolean)
+                    .join(", ")}
           />
           <InfoItem
             icon={UserGroupIcon}

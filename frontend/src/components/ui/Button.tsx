@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 
 interface ButtonProps {
+  type?:string;
   href?: string;
   onClick?: () => void;
   children: React.ReactNode;
@@ -15,6 +16,7 @@ interface ButtonProps {
 }
 
 export default function Button({
+  type,
   href,
   onClick,
   children,
@@ -56,7 +58,7 @@ export default function Button({
       focus:ring-cyan-400
     `,
     ghost: `
-      bg-transparent text-slate-300
+      bg-transparent text-slate-350
       hover:bg-slate-800/60 hover:text-white
       focus:ring-slate-500
     `,

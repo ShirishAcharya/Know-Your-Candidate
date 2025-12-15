@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 import Link from "next/link";
 import Button from "./ui/Button";
 
@@ -18,27 +19,29 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, setUser } = useAuth();
 
   useEffect(() => {
-    const checkLogin = () => setIsLoggedIn(!!localStorage.getItem("access_token"));
-    checkLogin();
-
-    window.addEventListener("storage", checkLogin);
-    window.addEventListener("scroll", () => setIsScrolled(window.scrollY > 10));
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
 
     return () => {
-      window.removeEventListener("storage", checkLogin);
-      window.removeEventListener("scroll", () => setIsScrolled(window.scrollY > 10));
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    setIsLoggedIn(false);
-    setMenuOpen(false);
-    window.dispatchEvent(new Event("storage"));
+  const handleLogout = async () => {
+    try {
+      await fetch(`/api/users/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      setUser(null);
+      setMenuOpen(false);
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (
@@ -51,10 +54,10 @@ export default function Header() {
     >
       <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-3 group">
+        <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center space-x-3 group">
           <div className="relative">
             <div className="w-10 h-10 bg-gradient-to-br from-white-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:shadow-cyan-500/20 transition-all duration-300 group-hover:scale-110">
-              <span className="text-gray  font-bold text-lg">K</span>
+              <span className="text-gray font-bold text-lg">K</span>
             </div>
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl" />
             <div className="absolute -inset-1 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 rounded-xl blur-sm group-hover:blur-md transition-all duration-300 opacity-0 group-hover:opacity-100" />
@@ -97,7 +100,6 @@ export default function Header() {
                   </span>
                 </div>
                 
-                {/* Hover Glow Effect */}
                 <div className={`absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-2xl blur-md transition-all duration-300 ${
                   isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                 }`} />
@@ -106,26 +108,25 @@ export default function Header() {
           })}
 
           <div className="ml-4 pl-4 border-l border-slate-700/50">
-  {isLoggedIn ? (
-    <Button
-      onClick={handleLogout}
-      className="relative overflow-hidden group bg-white text-slate-900 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl"
-    >
-      <span className="relative z-10">Logout</span>
-      <div className="absolute inset-0 bg-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-    </Button>
-  ) : (
-    <Link href="/login">
-      <Button className="relative overflow-hidden group bg-white text-slate-900 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl">
-        <span className="relative z-10">Login</span>
-        <div className="absolute inset-0 bg-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-      </Button>
-    </Link>
-  )}
-</div>
-
+            {user ? (
+              <Button
+                onClick={handleLogout}
+                className="relative overflow-hidden group bg-white text-slate-900 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl"
+              >
+                <span className="relative z-10">Logout</span>
+                <div className="absolute inset-0 bg-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              </Button>
+            ) : (
+              <Link href="/login">
+                <Button className="relative overflow-hidden group bg-white text-slate-900 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl">
+                  <span className="relative z-10">Login</span>
+                  <div className="absolute inset-0 bg-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                </Button>
+              </Link>
+            )}
+          </div>
         </nav>
 
         {/* Mobile Hamburger */}
@@ -161,33 +162,26 @@ export default function Header() {
               </Link>
             );
           })}
-<div className="ml-4 pl-4 border-l border-slate-700/50">
-  {isLoggedIn ? (
-    <Button
-      onClick={handleLogout}
-      className="relative overflow-hidden group bg-white text-slate-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl border border-slate-200"
-      variant="ghost"
-    >
-      <span className="relative z-10">Logout</span>
-      {/* Optional hover highlight */}
-      <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl" />
-    </Button>
-  ) : (
-    <Link href="/login">
-      <Button
-        className="relative overflow-hidden group bg-white text-slate-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl border border-slate-200"
-        variant="ghost"
-      >
-        <span className="relative z-10">Login</span>
-        {/* Optional hover highlight */}
-        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl" />
-      </Button>
-    </Link>
-  )}
-</div>
-
-
-
+          <div className="pt-3 border-t border-slate-700/50">
+            {user ? (
+              <Button
+                onClick={handleLogout}
+                className="w-full relative overflow-hidden group bg-white text-slate-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl border border-slate-200"
+              >
+                <span className="relative z-10">Logout</span>
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl" />
+              </Button>
+            ) : (
+              <Link href="/login" onClick={() => setMenuOpen(false)}>
+                <Button
+                  className="w-full relative overflow-hidden group bg-white text-slate-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform px-6 py-3 rounded-2xl border border-slate-200"
+                >
+                  <span className="relative z-10">Login</span>
+                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl" />
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
       )}
     </header>

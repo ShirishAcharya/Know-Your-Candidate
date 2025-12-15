@@ -34,7 +34,7 @@ export default function Home() {
 
     const fetchNews = async () => {
       try {
-        const res = await fetch("/news");
+        const res = await fetch("/api/news");
         if (!res.ok) throw new Error("Failed to fetch news");
         const data = await res.json();
         setArticles(data.articles || []);
@@ -64,7 +64,7 @@ export default function Home() {
       icon: "/icons/overview.svg",
       gradient: "from-cyan-500 to-blue-500",
       bgGradient: "from-cyan-500/10 to-blue-500/10",
-      stats: "500+ Profiles"
+      stats: "3000+ Profiles"
     },
     {
       title: "Policy Comparison",
@@ -212,8 +212,8 @@ export default function Home() {
         <div className="container mx-auto px-6 relative z-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             {[
-              { number: "500+", label: "Candidates" },
-              { number: "100+", label: "Constituencies" },
+              { number: "3000+", label: "Candidates" },
+              { number: "495", label: "Constituencies" },
             ].map((stat, index) => (
               <div key={index} className="group">
                 <div className="text-3xl lg:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent group-hover:from-cyan-300 group-hover:to-blue-300 transition-all duration-300 group-hover:scale-105">

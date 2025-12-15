@@ -2,338 +2,400 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { useRouter } from "next/navigation";
-import { useCandidatesData } from "./hooks/useCandidatesData";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCandidatesData, Candidate } from "./hooks/useCandidatesData";
 import { usePagination } from "@/hooks/usePagination";
 import { Pagination } from "@/components/ui/Pagination";
 import GradientText from "@/components/ui/GradientText";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import { setCandidates, selectCandidate } from "@/store/candidatesSlice";
+import { setCandidates, selectCandidate,  } from "@/store/candidatesSlice";
 
-// Types
+/* ---------------- types ---------------- */
 interface FilterState {
   province: string;
   district: string;
   party: string;
+  type: string;
+  constituency: string;
 }
 
-interface FilterOptions {
-  provinces: Array<{
-    id: string;
-    name: string;
-    districts: Array<{ id: string; name: string }>;
-  }>;
+export interface FilterOptions {
+  provinces: Array<{ id: number; name: string; districts: any[] }>;
+  districts: Array<{ id: number; name: string; province_id?: number }>;
   parties: string[];
+  types: Array<{ election_id: number; election_type: string }>;
+  constituencies: Array<{ id: string; name: string; districtId: number }>;
 }
 
-interface FilterSectionProps {
+/* ---------------- ui states ---------------- */
+const LoadingState = () => (
+  <div className="flex justify-center items-center py-20">
+    <div className="animate-spin h-12 w-12 border-b-2 border-blue-600 rounded-full" />
+  </div>
+);
+
+const ErrorState = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
+  <div className="text-center py-20">
+    <p className="text-red-600 mb-4">{message}</p>
+    <Button onClick={onRetry}>Try again</Button>
+  </div>
+);
+
+const EmptyState = ({ hasFilters }: { hasFilters: boolean }) => (
+  <div className="text-center py-20 text-gray-500">
+    {hasFilters
+      ? "No candidates match your filters."
+      : "No candidates available."}
+  </div>
+);
+
+/* ---------------- filter section ---------------- */
+const FilterSection = ({
+  filter,
+  filterOptions,
+  candidates,
+  onFilterChange,
+  onElectionTypeChange,
+  currentElectionId,
+}: {
   filter: FilterState;
   filterOptions: FilterOptions;
+  candidates: Candidate[];
   onFilterChange: (filter: FilterState) => void;
-}
+  onElectionTypeChange: (electionId: number, electionType: string) => void;
+  currentElectionId: number;
+}) => {
+  const handleFilterChange = (key: keyof FilterState, value: string) => {
+    const next = { ...filter, [key]: value };
+    
+    if (key === "type") {
+      const selectedElection = filterOptions.types.find(t => t.election_type === value);
+      if (selectedElection) {
+        onElectionTypeChange(selectedElection.election_id, value);
+      }
+      next.province = next.district = next.constituency = next.party = "";
+    } else if (key === "province") {
+      next.district = next.constituency = next.party = "";
+    } else if (key === "district") {
+      next.constituency = next.party = "";
+    } else if (key === "constituency") {
+      next.party = "";
+    }
+    
+    onFilterChange(next);
+  };
 
-// Filter Section Component
-const FilterSection = ({ filter, filterOptions, onFilterChange }: FilterSectionProps) => {
-  const selectedProvince = filterOptions.provinces.find(
-    (p) => p.name.trim().toLowerCase() === filter.province.trim().toLowerCase()
-  );
+  const filteredDistricts = filter.province
+    ? filterOptions.districts.filter((d) => {
+        const p = filterOptions.provinces.find((p) => p.name === filter.province);
+        return p && d.province_id === p.id;
+      })
+    : filterOptions.districts;
 
-  const districtsToShow = selectedProvince?.districts || [];
+  const filteredConstituencies = useMemo(() => {
+    const allConstituencies = filterOptions.constituencies || [];
+    const result = filter.district
+      ? allConstituencies.filter((c) => {
+          const district = filterOptions.districts.find(
+            (d) => d.name === filter.district
+          );
+          return district && c.districtId === district.id;
+        })
+      : allConstituencies;
 
-  const handleFilterChange = useCallback((key: keyof FilterState, value: string) => {
-    onFilterChange({
-      ...filter,
-      [key]: value,
-      ...(key === "province" ? { district: "" } : {}),
-    });
-  }, [filter, onFilterChange]);
+    return [...result].sort((a, b) =>
+      (a.name ?? "").localeCompare(b.name ?? "", "en", { numeric: true })
+    );
+  }, [filter.district, filterOptions.constituencies, filterOptions.districts]);
 
+  const filteredParties = useMemo(() => {
+    const parties = candidates
+      .filter((c) => {
+        if (filter.type && c.election_type.election_type !== filter.type) return false;
+        if (filter.province && c.province.name !== filter.province) return false;
+        if (filter.district && c.district.name !== filter.district) return false;
+        if (filter.constituency && c.constituency.constituency !== filter.constituency) return false;
+        return true;
+      })
+      .map((c) => c.party);
+
+    return Array.from(new Set(parties));
+  }, [candidates, filter]);
+
+  // Responsive & mobile-friendly select styles
   const selectClasses = `
-    border border-gray-300 rounded-lg px-4 py-2.5 shadow-sm hover:shadow-md 
-    transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent 
-    outline-none min-w-[180px] bg-white disabled:bg-gray-100 disabled:cursor-not-allowed
-    text-gray-700
+    w-full 
+    px-4 py-3 
+    text-base 
+    appearance-none 
+    bg-white 
+    border border-gray-300 
+    rounded-lg 
+    shadow-sm 
+    focus:ring-2 focus:ring-blue-500 
+    focus:border-blue-500 
+    outline-none 
+    transition-all
   `;
 
   return (
-    <div className="flex flex-wrap gap-4 mb-8" role="search" aria-label="Filter candidates">
-      {/* Province Filter */}
-      <div className="flex flex-col">
-        <label htmlFor="province-filter" className="text-sm font-medium text-gray-700 mb-1">
-          Province
-        </label>
-        <select
-          id="province-filter"
-          className={selectClasses}
-          value={filter.province}
-          onChange={(e) => handleFilterChange("province", e.target.value)}
-          aria-label="Filter by province"
-        >
-          <option value="">All Provinces</option>
-          {filterOptions.provinces.map((p) => (
-            <option key={p.id} value={p.name}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <select 
+        className={selectClasses} 
+        value={filter.type} 
+        onChange={(e) => handleFilterChange("type", e.target.value)}
+      >
+        {filterOptions.types.map((t) => (
+          <option key={t.election_id} value={t.election_type}>
+            {t.election_type}
+          </option>
+        ))}
+      </select>
 
-      {/* District Filter */}
-      <div className="flex flex-col">
-        <label htmlFor="district-filter" className="text-sm font-medium text-gray-700 mb-1">
-          District
-        </label>
-        <select
-          id="district-filter"
-          className={selectClasses}
-          value={filter.district}
-          onChange={(e) => handleFilterChange("district", e.target.value)}
-          disabled={!filter.province}
-          aria-label="Filter by district"
-          aria-disabled={!filter.province}
-        >
-          <option value="">All Districts</option>
-          {districtsToShow.length > 0 ? (
-            districtsToShow.map((d) => (
-              <option key={d.id} value={d.name}>
-                {d.name}
-              </option>
-            ))
-          ) : (
-            <option value="" disabled>
-              No districts available
-            </option>
-          )}
-        </select>
-      </div>
+      <select 
+        className={selectClasses} 
+        value={filter.province} 
+        onChange={(e) => handleFilterChange("province", e.target.value)}
+      >
+        <option value="">All Provinces</option>
+        {filterOptions.provinces.map((p) => (
+          <option key={p.id} value={p.name}>{p.name}</option>
+        ))}
+      </select>
 
-      {/* Party Filter */}
-      <div className="flex flex-col">
-        <label htmlFor="party-filter" className="text-sm font-medium text-gray-700 mb-1">
-          Political Party
-        </label>
-        <select
-          id="party-filter"
-          className={selectClasses}
-          value={filter.party}
-          onChange={(e) => handleFilterChange("party", e.target.value)}
-          aria-label="Filter by political party"
-        >
-          <option value="">All Parties</option>
-          {filterOptions.parties.map((p, idx) => (
-            <option key={`party-${idx}`} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-      </div>
+      <select 
+        className={selectClasses} 
+        value={filter.district} 
+        onChange={(e) => handleFilterChange("district", e.target.value)}
+      >
+        <option value="">All Districts</option>
+        {filteredDistricts.map((d) => (
+          <option key={d.id} value={d.name}>{d.name}</option>
+        ))}
+      </select>
+
+      <select
+        className={`${selectClasses} ${
+          !filter.district || currentElectionId === 2
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : ""
+        }`}
+        value={filter.constituency}
+        onChange={(e) => handleFilterChange("constituency", e.target.value)}
+        disabled={!filter.district || currentElectionId === 2}
+      >
+        {!filter.district ? (
+          <option value="">Constituency</option>
+        ) : (
+          <option value="">All Constituencies</option>
+        )}
+        {filteredConstituencies.map((c) => (
+          <option key={c.id} value={c.name}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+
+      <select 
+        className={selectClasses} 
+        value={filter.party} 
+        onChange={(e) => handleFilterChange("party", e.target.value)}
+      >
+        <option value="">All Parties</option>
+        {filteredParties.map((p) => (
+          <option key={p} value={p}>{p}</option>
+        ))}
+      </select>
     </div>
   );
 };
 
-// Loading Component
-const LoadingState = () => (
-  <div className="flex justify-center items-center py-20" role="status" aria-label="Loading candidates">
-    <div 
-      className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
-      aria-hidden="true"
-    ></div>
-    <span className="sr-only">Loading candidates...</span>
-  </div>
-);
-
-// Error Component
-const ErrorState = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
-  <div className="text-center py-20" role="alert">
-    <div className="text-red-600 mb-4 text-lg">⚠️ {message}</div>
-    <Button 
-      onClick={onRetry} 
-      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-    >
-      Try Again
-    </Button>
-  </div>
-);
-
-// Empty State Component
-const EmptyState = ({ hasFilters }: { hasFilters: boolean }) => (
-  <div className="text-center py-20">
-    <div className="text-gray-500 text-lg mb-4">
-      {hasFilters ? "No candidates match your filters" : "No candidates available"}
-    </div>
-    <p className="text-gray-400 max-w-md mx-auto">
-      {hasFilters 
-        ? "Try adjusting your filters to see more results." 
-        : "Check back later for candidate updates."
-      }
-    </p>
-  </div>
-);
-
-// Constants
+/* ---------------- main page ---------------- */
 const PAGE_SIZE = 8;
 
-// Main Component
 export default function CandidatesPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { candidates, filterOptions, loading, error } = useCandidatesData();
-  const [filter, setFilter] = useState<FilterState>({ 
-    province: "", 
-    district: "", 
-    party: "" 
+  const searchParams = useSearchParams();
+  const { candidates, filterOptions, loading, error, electionId, setElectionId } = useCandidatesData();
+
+  const [filter, setFilter] = useState<FilterState>({
+    province: "",
+    district: "",
+    party: "",
+    type: "",
+    constituency: "",
   });
 
-  // Store candidates in Redux
   useEffect(() => {
-    if (candidates.length > 0) {
-      dispatch(setCandidates(candidates));
+    const urlProvince = searchParams.get('province') || '';
+    const urlDistrict = searchParams.get('district') || '';
+    const urlParty = searchParams.get('party') || '';
+    const urlType = searchParams.get('type') || '';
+    const urlConstituency = searchParams.get('constituency') || '';
+
+    setFilter({
+      province: urlProvince,
+      district: urlDistrict,
+      party: urlParty,
+      type: urlType,
+      constituency: urlConstituency,
+    });
+
+    if (urlType && filterOptions.types.length > 0) {
+      const selectedElection = filterOptions.types.find(t => t.election_type === urlType);
+      if (selectedElection) {
+        setElectionId(selectedElection.election_id);
+      }
     }
+  }, [searchParams, filterOptions.types, setElectionId]);
+
+  useEffect(() => {
+    if (candidates.length) dispatch(setCandidates(candidates));
   }, [candidates, dispatch]);
 
-  // Filter candidates
+  const updateURL = useCallback((newFilter: FilterState) => {
+    const params = new URLSearchParams();
+    if (newFilter.type) params.set('type', newFilter.type);
+    if (newFilter.province) params.set('province', newFilter.province);
+    if (newFilter.district) params.set('district', newFilter.district);
+    if (newFilter.constituency) params.set('constituency', newFilter.constituency);
+    if (newFilter.party) params.set('party', newFilter.party);
+
+    const queryString = params.toString();
+    router.push(queryString ? `?${queryString}` : '/candidates', { scroll: false });
+  }, [router]);
+
   const filteredCandidates = useMemo(() => {
-    return candidates.filter((candidate) => {
-      const matchesProvince = !filter.province || 
-        candidate.province?.name.trim().toLowerCase() === filter.province.trim().toLowerCase();
-      
-      const matchesDistrict = !filter.district || 
-        candidate.district?.name.trim().toLowerCase() === filter.district.trim().toLowerCase();
-      
-      const matchesParty = !filter.party || candidate.party === filter.party;
-      
-      return matchesProvince && matchesDistrict && matchesParty;
+    return candidates.filter((c) => {
+      const matchesType = !filter.type || c.election_type.election_type.toLowerCase() === filter.type.toLowerCase();
+      const matchesProvince = !filter.province || c.province.name.toLowerCase() === filter.province.toLowerCase();
+      const matchesDistrict = !filter.district || c.district.name.toLowerCase() === filter.district.toLowerCase();
+      const matchesConstituency = !filter.constituency || c.constituency.constituency.toLowerCase() === filter.constituency.toLowerCase();
+      const matchesParty = !filter.party || c.party === filter.party;
+      return matchesType && matchesProvince && matchesDistrict && matchesConstituency && matchesParty;
     });
   }, [candidates, filter]);
 
-  // Pagination
-  const pagination = usePagination({
-    totalItems: filteredCandidates.length,
-    pageSize: PAGE_SIZE,
-  });
+  const pagination = usePagination({ totalItems: filteredCandidates.length, pageSize: PAGE_SIZE });
 
-  const paginatedCandidates = useMemo(() => {
-    const start = pagination.offset;
-    const end = start + pagination.pageSize;
-    return filteredCandidates.slice(start, end);
-  }, [filteredCandidates, pagination.offset, pagination.pageSize]);
+  const handleFilterChange = useCallback((newFilter: FilterState) => {
+    setFilter(newFilter);
+    updateURL(newFilter);
+    pagination.setPage(1); 
+  }, [updateURL, pagination.setPage]);
 
-  // Reset to first page when filters change
-  useEffect(() => {
-    pagination.setPage(1);
-  }, [filter]);
+  const handleElectionTypeChange = useCallback((newElectionId: number, electionType: string) => {
+    setElectionId(newElectionId);
+    const newFilter = { 
+      ...filter, 
+      type: electionType,
+      province: "",
+      district: "",
+      constituency: "",
+      party: ""
+    };
+    setFilter(newFilter);
+    updateURL(newFilter);
+  }, [setElectionId, filter, updateURL]);
+
+  const paginatedCandidates = filteredCandidates.slice(
+    pagination.offset,
+    pagination.offset + pagination.pageSize
+  );
 
   const handlePageChange = useCallback((page: number) => {
     pagination.setPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [pagination]);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [pagination.setPage]);
 
-  const handleCandidateClick = useCallback((candidateId: string) => {
-    dispatch(selectCandidate(candidateId));
-    router.push(`/candidates/${candidateId}`);
-  }, [dispatch, router]);
-
-  const handleRetry = useCallback(() => {
-    window.location.reload();
-  }, []);
-
-  // Show loading state
   if (loading) return <LoadingState />;
-  
-  // Show error state
-  if (error) return <ErrorState message={error} onRetry={handleRetry} />;
+  if (error) return <ErrorState message={error} onRetry={() => window.location.reload()} />;
 
-  const hasActiveFilters = filter.province !== "" || filter.district !== "" || filter.party !== "";
-  const showEmptyState = filteredCandidates.length === 0;
+  const hasFilters = Object.values(filter).some(Boolean);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-      {/* Header Section */}
       <header className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
           <GradientText>Meet the Candidates</GradientText>
         </h1>
         <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
-          Browse through the list of candidates, filter by location and party to find who represents you.
+          Browse through the list of candidates. Filter by location, constituency and party to find who wants to represent you.<br></br>( Note: All the data below is from the 2079 elections)
         </p>
       </header>
 
-      {/* Filter Section */}
-      <FilterSection 
-        filter={filter} 
-        filterOptions={filterOptions} 
-        onFilterChange={setFilter} 
+      <FilterSection
+        filter={filter}
+        filterOptions={filterOptions}
+        candidates={candidates}
+        onFilterChange={handleFilterChange}
+        onElectionTypeChange={handleElectionTypeChange}
+        currentElectionId={electionId}
       />
 
-      {/* Results Count */}
-      <div className="mb-6 text-gray-600 flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 text-gray-600">
         <span>
-          Showing{" "}
-          <strong>
-            {paginatedCandidates.length > 0 ? pagination.offset + 1 : 0}-
-            {pagination.offset + paginatedCandidates.length}
-          </strong>{" "}
-          of <strong>{filteredCandidates.length}</strong> candidate
-          {filteredCandidates.length !== 1 ? "s" : ""}
+          Showing <strong>{filteredCandidates.length ? pagination.offset + 1 : 0}-{pagination.offset + paginatedCandidates.length}</strong> of{" "}
+          <strong>{filteredCandidates.length}</strong>
         </span>
-        
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            onClick={() => setFilter({ province: "", district: "", party: "" })}
-            className="text-sm"
+
+        {hasFilters && (
+          <Button 
+            variant="ghost" 
+            onClick={() => {
+              const clearedFilter = { province: "", district: "", party: "", type: "", constituency: "" };
+              setFilter(clearedFilter);
+              setElectionId(1);
+              router.push('/candidates', { scroll: false });
+            }}
           >
-            Clear Filters
+            Reset Filters
           </Button>
         )}
       </div>
 
-      {/* Candidates Grid */}
-      {!showEmptyState ? (
+      {filteredCandidates.length === 0 ? (
+        <EmptyState hasFilters={hasFilters} />
+      ) : (
         <>
-          <div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
-            role="list"
-            aria-label="Candidates list"
-          >
-            {paginatedCandidates.map((candidate) => (
-              <article 
-                key={candidate.id}
-                role="listitem"
-                className="cursor-pointer transform transition-transform hover:scale-105 focus:scale-105"
-                onClick={() => handleCandidateClick(candidate.id)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {paginatedCandidates.map((c) => (
+              <article
+                key={c.id}
+                tabIndex={0}
+                className="cursor-pointer"
+                onClick={() => {
+                  dispatch(selectCandidate(c.id));
+                  router.push(`/candidates/${c.id}`);
+                }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleCandidateClick(candidate.id);
+                  if (e.key === "Enter" || e.key === " ") {
+                    dispatch(selectCandidate(c.id));
+                    router.push(`/candidates/${c.id}`);
                   }
                 }}
-                tabIndex={0}
-                aria-label={`View details for ${candidate.name}`}
               >
                 <Card
-                  title={candidate.name}
-                  subtitle={candidate.party}
-                  image={candidate.image}
-                  footer={`${candidate.district?.name || "N/A"}, ${candidate.province?.name || "N/A"}`}
+                  title={c.name}
+                  subtitle={c.party}
+                  footer={`District ${c.district.name} • Province ${c.province.name}`}
+                  image = {c.image}
                 />
               </article>
             ))}
           </div>
 
-          {/* Pagination */}
           {pagination.totalPages > 1 && (
             <Pagination
               currentPage={pagination.currentPage}
               totalPages={pagination.totalPages}
               onPageChange={handlePageChange}
-              className="mt-12"
+              className="mt-10"
             />
           )}
         </>
-      ) : (
-        <EmptyState hasFilters={hasActiveFilters} />
       )}
     </div>
   );
