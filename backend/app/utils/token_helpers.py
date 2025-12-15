@@ -1,13 +1,16 @@
 # app/utils/token_helpers.py
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import jwt, JWTError
 from redis import Redis
 from app.core.logger import logger
+from dotenv import load_dotenv
 
-# JWT Configuration
-SECRET_KEY = "sdadasddqe212312edas"
-ALGORITHM = "HS256"
+
+load_dotenv()
+ALGORITHM = os.getenv("ALGORITHM")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 def create_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
