@@ -6,7 +6,9 @@ import redis
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 
+load_dotenv()
 # -------------------------------------------------
 # Logger Setup
 # -------------------------------------------------
@@ -19,12 +21,11 @@ logger = logging.getLogger("database")
 # -------------------------------------------------
 # PostgreSQL Configuration
 # -------------------------------------------------
-POSTGRES_USER = os.getenv("POSTGRES_USER", "know_your_candidate_user")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "know_your_candidate_pass")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "know_your_candidate_db")
-# DB_HOST = os.getenv("DB_HOST", "know_your_candidate_postgres")
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", 5432))
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = int(os.getenv("DB_PORT"))
 
 SQLALCHEMY_DATABASE_URL = (
     f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{DB_HOST}:{DB_PORT}/{POSTGRES_DB}"
@@ -39,8 +40,8 @@ logger.info(f"PostgreSQL engine created: {SQLALCHEMY_DATABASE_URL}")
 # -------------------------------------------------
 # Redis Configuration with Retry
 # -------------------------------------------------
-REDIS_HOST = os.getenv("REDIS_HOST", "know_your_candidate_dragonfly")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = int(os.getenv("REDIS_PORT"))
 REDIS_DB = int(os.getenv("REDIS_DB", 0))
 
 redis_client = None

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, Suspense } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCandidatesData, Candidate } from "./hooks/useCandidatesData";
@@ -214,7 +214,7 @@ const FilterSection = ({
 /* ---------------- main page ---------------- */
 const PAGE_SIZE = 8;
 
-export default function CandidatesPage() {
+function CandidatesPageContent() {
   const dispatch = useDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -398,5 +398,13 @@ export default function CandidatesPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function CandidatesPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
+      <CandidatesPageContent />
+    </Suspense>
   );
 }

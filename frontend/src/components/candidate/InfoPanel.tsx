@@ -29,7 +29,7 @@ export default function InfoPanel({ candidate, candidateDetails, onOpenReviewMod
           <InfoItem
             icon={LocationIcon}
             label="Location"
-            value={[candidate.birthplace, candidate.constituency]
+            value={[candidate.birthplace, /* candidate.constituency?.constituency*/]
                     .filter(Boolean)
                     .join(", ")}
           />

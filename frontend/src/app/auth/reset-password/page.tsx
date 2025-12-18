@@ -2,19 +2,22 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import Button from '@/components/ui/Button';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
-export default function ResetPasswordPage() {
+// Separate component that uses useSearchParams()
+function ResetPasswordContent() {
+  const searchParams = useSearchParams(); 
+  const router = useRouter();
+  const email = searchParams.get('email');
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get('email');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +59,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-pink-100 p-4">
       <div className="max-w-md w-full mx-auto">
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-rose-100/50 border border-white/60 p-8">
-
+          {/* ... your existing JSX ... */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-r from-rose-400 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,5 +132,14 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main page component — only renders Suspense
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

@@ -3,6 +3,10 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.database.base import Base
 
+from alembic import context
+from dotenv import load_dotenv
+import os
+
 # Parent entities first
 # app/alembic/env.py
 
@@ -22,7 +26,9 @@ import app.models.news
 
 
 
-
+load_dotenv()
+config = context.config
+config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
 
 # this is the Alembic Config object

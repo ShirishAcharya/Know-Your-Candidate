@@ -12,6 +12,12 @@ from app.config import UPLOADS_DIR
 import uuid
 import shutil
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BACKEND_URL = os.getenv("BACKEND_URL" , "http://127.0.0.1:8000")
 
 router = APIRouter(prefix="/candidates", tags=["Candidates"])
 
@@ -62,7 +68,7 @@ async def upload_image(
     with open(file_path , "wb") as f:
         shutil.copyfileobj(file.file , f)
     
-    image_url = f"http://localhost:8000/candidates/uploads/{unique_name}"
+    image_url = f"{BACKEND_URL}/candidates/uploads/{unique_name}"
 
     db_candidate.image = image_url
     db.commit()

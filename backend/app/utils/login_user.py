@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from fastapi import Response , HTTPException , Depends , Request
 from fastapi.security import OAuth2PasswordBearer
@@ -7,10 +8,11 @@ from app.utils.token_helpers import create_token , SECRET_KEY , ALGORITHM
 from jose import jwt, JWTError
 from app.database.base import SessionLocal
 from dotenv import load_dotenv
+
 load_dotenv()
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+REFRESH_TOKEN_EXPIRE_DAYS = os.getenv("REFRESH_TOKEN_EXPIRE_DAYS")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 

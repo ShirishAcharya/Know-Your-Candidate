@@ -1,3 +1,4 @@
+import os
 import random
 import string
 from fastapi import HTTPException
@@ -5,7 +6,11 @@ from redis.asyncio import Redis
 
 from app.services.email import send_otp_email
 
-redis = Redis.from_url("redis://localhost:6379", decode_responses=True)
+from dotenv import load_dotenv
+
+load_dotenv()
+
+redis = Redis.from_url(os.getenv("REDIS_URL"), decode_responses=True)
 
 def generate_otp() -> str:
     return "".join(random.choices(string.digits, k=6))

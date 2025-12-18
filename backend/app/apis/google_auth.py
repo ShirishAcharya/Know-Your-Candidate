@@ -18,6 +18,7 @@ CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 TOKEN_URL = "https://oauth2.googleapis.com/token"
+FRONTEND_URL  = os.getenv("FRONTEND_URL")
 
 AUTH_URL = (
     "https://accounts.google.com/o/oauth2/v2/auth"
@@ -79,7 +80,7 @@ async def google_callback(
         db.commit()
         db.refresh(user)
 
-    redirect = RedirectResponse(url="http://127.0.0.1:3000")
+    redirect = RedirectResponse(url=FRONTEND_URL)
 
     login_oauth_user(user, redirect, db)
 

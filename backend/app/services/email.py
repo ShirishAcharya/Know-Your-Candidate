@@ -32,7 +32,7 @@ async def send_otp_email(to: str, otp: str, purpose: str):
     await aiosmtplib.send(
         msg,
         hostname=os.getenv("SMTP_HOST"),
-        port=int(os.getenv("SMTP_PORT", "587")),
+        port=int(os.getenv("SMTP_PORT")),
         username=os.getenv("SMTP_USER"),
         password=os.getenv("SMTP_PASS"),
         start_tls=True,

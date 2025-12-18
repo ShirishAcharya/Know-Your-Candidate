@@ -43,8 +43,6 @@ async def health():
     return {"status": "ok"}
 
 # Import scripts endpoints
-# (Also note: you currently have 4 endpoints using the same function name `trigger_party_import`. 
-# Each function must have a unique name!)
 @app.post("/import-parties")
 async def import_parties():
     try:

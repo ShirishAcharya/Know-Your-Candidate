@@ -39,7 +39,7 @@ export default function CandidateLayout({
                 <span className="flex items-center text-gray-600 font-medium">
                   <LocationIcon className="w-4 h-4 mr-2" />
                   {candidate.birthplace || "N/A"},{" "}
-                  {candidate.constituency || "N/A"}
+                  {/* {candidate.constituency?.constituency || "N/A"} */}
                 </span>
                 <Button
                   variant="outline"

@@ -4,12 +4,14 @@ from botocore.exceptions import ClientError
 from fastapi import HTTPException, UploadFile
 import uuid
 import os
+from dotenv import load_dotenv
 
-# Hardcoded MinIO configuration
-MINIO_INTERNAL = "http://know_your_candidate_minio:9000"
-MINIO_EXTERNAL = "http://localhost:9000"
-MINIO_ACCESS_KEY = "admin"
-MINIO_SECRET_KEY = "password123"
+load_dotenv()
+
+MINIO_INTERNAL = os.getenv("MINIO_INTERNAL")
+MINIO_EXTERNAL = os.getenv("MINIO_EXTERNAL")
+MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
+MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 
 # Lazy initialization - don't create client at module level
 _s3_client = None

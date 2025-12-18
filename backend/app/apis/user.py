@@ -1,4 +1,5 @@
 # app/apis/user.py
+import os
 from datetime import timedelta
 from typing import List, Optional
 
@@ -27,10 +28,13 @@ from app.utils.token_helpers import (
     logout_all_user_tokens,
 )
 from app.utils.login_user import get_current_user_from_cookie
+from dotenv import load_dotenv
 
-# JWT / token configuration
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+load_dotenv()
+
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+REFRESH_TOKEN_EXPIRE_DAYS = os.getenv("REFRESH_TOKEN_EXPIRE_DAYS")
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 router = APIRouter(prefix="/users", tags=["Users"])

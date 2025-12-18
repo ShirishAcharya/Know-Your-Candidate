@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback, Suspense } from "react";
 import { useCandidatesData, Candidate } from "../hooks/useCandidatesData";
 import Button from "@/components/ui/Button";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,7 +14,7 @@ interface CompareFilter {
   constituency: string;
 }
 
-export default function CompareCandidatesPage() {
+function CompareCandidatesPageContent() {
   const {
     candidates,
     filterOptions,
@@ -344,6 +344,14 @@ export default function CompareCandidatesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CompareCandidatesPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
+      <CompareCandidatesPageContent />
+    </Suspense>
   );
 }
 

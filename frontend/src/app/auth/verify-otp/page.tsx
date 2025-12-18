@@ -1,12 +1,13 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 
-export default function VerifyOTPPage() {
+function OTPPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get('email');
+
   const purpose = searchParams.get('purpose') as 'register' | 'reset_password';
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -93,3 +94,11 @@ export default function VerifyOTPPage() {
     </div>
   );
 }
+
+  export default function VerifyOTPPage() {
+    return (
+      <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
+        <OTPPageContent />
+      </Suspense>
+    );
+  }
