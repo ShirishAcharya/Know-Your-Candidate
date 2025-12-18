@@ -34,10 +34,7 @@ export default function AddSectionModal({ isOpen, onClose, onSave, section }: Ad
     setItems(updatedItems);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
-    
+  const handleSubmit = async () => {
     // Filter out empty items before saving
     const nonEmptyItems = items.filter(item => 
       Object.values(item).some(val => val && val.toString().trim() !== '')
